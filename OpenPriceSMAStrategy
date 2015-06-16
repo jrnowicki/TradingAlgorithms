@@ -23,69 +23,69 @@ public class OpenPriceSMAStrategy {
 		LinkedList<Double> stockPrice10Day = new LinkedList<Double> ();
 		
 		// Call helper function to calculate SMA
-        SimpleMovingAverage10Day.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "OpenPriceHistory.txt");
-        SimpleMovingAverage10Day.simpleMA10Day(stockPrice10Day);
+        	SimpleMovingAverage10Day.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "OpenPriceHistory.txt");
+        	SimpleMovingAverage10Day.simpleMA10Day(stockPrice10Day);
         
-        ListIterator<Double> iterOpenPrice = OpenPriceHistory.openPriceHistory.listIterator();
-        ListIterator<Double> iterSMA10 = SimpleMovingAverage10Day.sma10Day.listIterator();
+        	ListIterator<Double> iterOpenPrice = OpenPriceHistory.openPriceHistory.listIterator();
+        	ListIterator<Double> iterSMA10 = SimpleMovingAverage10Day.sma10Day.listIterator();
         
-        // Align open price with 10-day moving average
-        iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next();
-        iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next();
+        	// Align open price with 10-day moving average
+        	iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next();
+        	iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next(); iterOpenPrice.next();
         
-        System.out.println("Individual Trade Results: ");
+        	System.out.println("Individual Trade Results: ");
              
-        double buy = 0.0;
-        double sell = 0.0;
-        int numShares = 100;
-        double result = 0.0;
-        double profitLoss = 0.0;
-        boolean isLong = false;
-        boolean isShort = false;
+        	double buy = 0.0;
+        	double sell = 0.0;
+        	int numShares = 100;
+        	double result = 0.0;
+        	double profitLoss = 0.0;
+        	boolean isLong = false;
+        	boolean isShort = false;
         
-        while (iterOpenPrice.hasNext() != false) {
+        	while (iterOpenPrice.hasNext() != false) {
         	
-        	double price = iterOpenPrice.next();
-        	double sma10 = iterSMA10.next();
+        		double price = iterOpenPrice.next();
+        		double sma10 = iterSMA10.next();
         	
-        	// Long
-        	if (price > sma10) {
+        		// Long
+        		if (price > sma10) {
         		
-        		if (isShort == false && isLong == false) {
-        			buy = price * numShares;
-        			isLong = true;
+        			if (isShort == false && isLong == false) {
+        				buy = price * numShares;
+        				isLong = true;
+        			}
+        			if (isShort == true) { 
+        				result = sell - (price * numShares);
+        				System.out.printf("%.2f", result);
+        				System.out.print(" | ");
+        				isShort = false;
+        				buy = price * numShares;
+        				isLong = true;
+        				profitLoss += result;
+        			}
         		}
-        		if (isShort == true) { 
-        			result = sell - (price * numShares);
-        			System.out.printf("%.2f", result);
-        			System.out.print(" | ");
-        			isShort = false;
-        			buy = price * numShares;
-        			isLong = true;
-        			profitLoss += result;
-        		}
-        	}
         	
-        	// Short
-        	if (price < sma10) {
+        		// Short
+        		if (price < sma10) {
         		
-        		if (isShort == false && isLong == false) {
-        			sell = price * numShares;
-        			isShort = true;
+        			if (isShort == false && isLong == false) {
+        				sell = price * numShares;
+        				isShort = true;
+        			}
+        			if (isLong == true) {
+        				result = (price * numShares) - buy;
+        				System.out.printf("%.2f", result);
+        				System.out.print(" | ");
+        				isLong = false;
+        				sell = price * numShares;
+        				isShort = true;
+        				profitLoss += result;
+        			}
         		}
-        		if (isLong == true) {
-        			result = (price * numShares) - buy;
-        			System.out.printf("%.2f", result);
-        			System.out.print(" | ");
-        			isLong = false;
-        			sell = price * numShares;
-        			isShort = true;
-        			profitLoss += result;
-        		}
-        	}
 		}
-        System.out.print("\n");
-        System.out.println("Total Profit/Loss: ");
-        System.out.printf("%.2f", profitLoss);
+        	System.out.print("\n");
+        	System.out.println("Total Profit/Loss: ");
+        	System.out.printf("%.2f", profitLoss);
 	}
 }
