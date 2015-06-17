@@ -1,0 +1,49 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This class reads a stock's price from a text file. It
+ * then calculates the 10-day simple moving average (SMA)
+ * and adds the results to a linked list.
+ */
+
+public class SimpleMovingAverage10Day {
+	
+	static LinkedList<Double> stockPrice10Day = new LinkedList<Double> ();
+	static LinkedList<Double> sma10Day = new LinkedList<Double> ();
+	
+	public static void simpleMA10Day(LinkedList<Double> stockPrice) {
+		
+		int counter = 241;
+		
+		while (stockPrice10Day.size() >= 11) {
+			
+			double sum = 0.0;
+			double sma = 0.0;
+			for (int i = 0; i < stockPrice10Day.size() - counter; i++) {
+			
+				sum += stockPrice10Day.get(i);
+			}
+			sma = sum/10;
+			sma10Day.addLast(sma);
+			//System.out.println(sma);
+			counter = counter - 1;
+			stockPrice10Day.removeFirst();
+		}
+	}
+	
+	public static void readFile(String file) throws FileNotFoundException {
+		
+		Scanner scanner = new Scanner(new File(file));
+        
+        while (scanner.hasNext()) {
+        	
+        	stockPrice10Day.add(Double.parseDouble(scanner.next()));
+        }
+         
+        scanner.close();
+	}
+}
+
