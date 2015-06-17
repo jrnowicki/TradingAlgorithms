@@ -1,0 +1,183 @@
+import java.io.FileNotFoundException;
+import java.util.ListIterator;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This algorithm is used to calculate a stocks relative strength index (RSI). 
+ * It then uses the RSI to trigger buy or sell positions and to close out of
+ * those positions. It returns individual trade results as well as a total 
+ * profit/loss.
+ */
+
+public class RSIStrategy {
+
+	public static void main(String[] args) throws FileNotFoundException {
+		
+		@SuppressWarnings("resource")
+		Scanner console = new Scanner(System.in);
+		System.out.println("Enter Stock Symbol and Year (Ex. DIA2006): " );
+		String stock = console.next();
+		
+		OpenPriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "OpenPriceHistory.txt");
+		ClosePriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "ClosePriceHistory.txt");
+		
+		ListIterator<Double> iterOpenPrice = OpenPriceHistory.openPriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice = ClosePriceHistory.closePriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice2 = ClosePriceHistory.closePriceHistory.listIterator();
+		
+		// Align List
+        iterOpenPrice.next();
+        
+        System.out.println("Individual Trade Results:");
+        
+        double RS = 0.0;
+        double RSI = 0.0;
+        int period = 14;
+        int counter = 0;
+        double sumGain = 0.0;
+        double sumLoss = 0.0;
+        double avgGain = 0.0;
+        double avgLoss = 0.0;
+        double currentGain = 0.0;
+        double currentLoss = 0.0;
+        
+        double priceToday = iterClosePrice.next();
+        double priceYesterday = iterClosePrice2.next();
+        double priceTomorrow = iterOpenPrice.next();
+        
+        double buy = 0.0;
+        double sell = 0.0;
+        int numShares = 100;
+        double result = 0.0;
+        double profitLoss = 0.0;
+        boolean isLong = false;
+        boolean isShort = false;
+        
+        while (iterClosePrice.hasNext() != false && iterClosePrice2.hasNext() != false && iterOpenPrice.hasNext() != false) {
+        	
+        	priceToday = iterClosePrice.next();
+        	priceYesterday = iterClosePrice2.previous();
+        	priceTomorrow = iterOpenPrice.next();
+        	
+        	// Calculate RSI
+        	if (counter < period) {
+        	
+        		if (priceToday > priceYesterday) {
+        		
+        			sumGain += priceToday - priceYesterday;
+        			counter += 1;
+        			
+        			priceYesterday = iterClosePrice2.next();
+        			priceYesterday = iterClosePrice2.next();
+        		}
+        	
+        		else if (priceToday < priceYesterday) { 
+        		
+        			sumLoss += priceYesterday - priceToday;
+        			counter += 1;
+        			
+        			priceYesterday = iterClosePrice2.next();
+        			priceYesterday = iterClosePrice2.next();
+        		}
+        	
+        		else { // priceToday = priceYesterday
+        		
+        			counter += 1;
+        			
+        			priceYesterday = iterClosePrice2.next();
+        			priceYesterday = iterClosePrice2.next();
+        		}
+        	
+        	}
+        	
+        	if (counter == period) {
+        		
+        		avgGain = sumGain / period;
+        		avgLoss = sumLoss / period;
+        		RS = avgGain / avgLoss;
+        		RSI = 100 - (100 / (1 + RS));
+        		//System.out.printf("%.2f", RSI);
+        		//System.out.println("");
+        		counter += 1;
+        		
+        		priceToday = iterClosePrice.next();
+        		priceYesterday = iterClosePrice2.previous();
+        		priceTomorrow = iterOpenPrice.next();
+        	}
+        	
+        	if (counter > period) {
+        		
+        		if (priceToday > priceYesterday) {
+        			
+        			currentGain = priceToday - priceYesterday;
+        			avgGain = ((avgGain * (period - 1)) + currentGain) / period;
+        			counter += 1;
+    			
+            		priceYesterday = iterClosePrice2.next();
+            		priceYesterday = iterClosePrice2.next();
+        		}
+        	
+        		else if (priceToday < priceYesterday) { 
+        			
+        			currentLoss = priceYesterday - priceToday;
+        			avgLoss = ((avgLoss * (period - 1)) + currentLoss) / period;
+        			counter += 1;
+    			
+        			priceYesterday = iterClosePrice2.next();
+        			priceYesterday = iterClosePrice2.next();
+        		}
+    	
+        		else { // priceToday = priceYesterday
+        			
+        			counter += 1;
+    			
+        			priceYesterday = iterClosePrice2.next();
+        			priceYesterday = iterClosePrice2.next();
+        		}
+        	
+        		RS = avgGain/avgLoss;
+        		RSI = 100 - (100 / (1 + RS));
+        		//System.out.printf("%.2f", RSI);
+        		//System.out.println("");
+        		
+        		// Long
+            	if (RSI < 45) {
+            		
+            		if (isShort == false && isLong == false) {
+            			buy = priceTomorrow * numShares;
+            			isLong = true;
+            		}
+            		if (isShort == true) { 
+            			result = sell - (priceTomorrow * numShares);
+            			System.out.printf("%.2f", result);
+            			System.out.print("\n");
+            			isShort = false;
+            			buy = priceTomorrow * numShares;
+            			isLong = true;
+            			profitLoss += result;
+            		}
+            	}
+            	
+            	// Short
+            	if (RSI > 60) {
+            		
+            		if (isShort == false && isLong == false) {
+            			sell = priceTomorrow * numShares;
+            			isShort = true;
+            		}
+            		if (isLong == true) {
+            			result = (priceTomorrow * numShares) - buy;
+            			System.out.printf("%.2f", result);
+            			System.out.print("\n");
+            			isLong = false;
+            			sell = priceTomorrow * numShares;
+            			isShort = true;
+            			profitLoss += result;
+            		}
+            	}
+        	}
+        }   
+        System.out.println("Total Profit/Loss: ");
+        System.out.printf("%.2f", profitLoss);
+	}
+}
