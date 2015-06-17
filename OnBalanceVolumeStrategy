@@ -1,0 +1,122 @@
+import java.io.FileNotFoundException;
+import java.util.ListIterator;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This algorithm calculates the On Balance Volume (OBV) of a stock. 
+ * It then buys the stock when the OBV is less than zero and sells
+ * short the stock when the OBV is greater than or equal to zero.
+ * The results of each individual trade and profit/loss is returned.
+ */
+
+public class OnBalanceVolumeStrategy {
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		
+		@SuppressWarnings("resource")
+		Scanner console = new Scanner(System.in);
+		System.out.println("Enter Stock Symbol and Year (Ex. DIA2006): " );
+		String stock = console.next();
+		
+		OpenPriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "OpenPriceHistory.txt");
+		ClosePriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "ClosePriceHistory.txt");
+		VolumeHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "VolumeHistory.txt");
+		
+		ListIterator<Double> iterOpenPrice = OpenPriceHistory.openPriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice = ClosePriceHistory.closePriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice2 = ClosePriceHistory.closePriceHistory.listIterator();
+        ListIterator<Integer> iterVolume = VolumeHistory.volumeHistory.listIterator();
+        
+        // Align List
+        iterOpenPrice.next();
+        
+        //System.out.println("On Balance Volume (OBV):");
+        System.out.println("Individual Trade Results:");
+        
+        int OBV = 0;
+        double priceToday = iterClosePrice.next();
+        double priceYesterday = iterClosePrice2.next();
+        double priceTomorrow = iterOpenPrice.next();
+        int volume = iterVolume.next();
+        
+        double buy = 0.0;
+        double sell = 0.0;
+        int numShares = 100;
+        double result = 0.0;
+        double profitLoss = 0.0;
+        boolean isLong = false;
+        boolean isShort = false;
+        
+        while (iterClosePrice.hasNext() != false && iterVolume.hasNext() != false && iterOpenPrice.hasNext() != false) {
+        	
+        	priceToday = iterClosePrice.next();
+        	priceYesterday = iterClosePrice2.previous();
+        	priceTomorrow = iterOpenPrice.next();
+        	volume = iterVolume.next();
+        	
+        	// Calculate OBV
+        	if (priceToday > priceYesterday) {
+        		
+        		OBV += volume;
+        		priceYesterday = iterClosePrice2.next();
+        		priceYesterday = iterClosePrice2.next();
+        	}
+        	
+        	else if (priceToday < priceYesterday) {
+        		
+        		OBV -= volume;
+        		priceYesterday = iterClosePrice2.next();
+        		priceYesterday = iterClosePrice2.next();
+        	}
+        	
+        	else { // priceToday = priceYesterday
+        		
+        		// OBV = OBV
+        		priceYesterday = iterClosePrice2.next();
+        		priceYesterday = iterClosePrice2.next();
+        	}
+        	
+        	//System.out.println(OBV);
+        	
+        	// Long
+        	if (OBV < 0) {
+        		
+        		if (isShort == false && isLong == false) {
+        			buy = priceTomorrow * numShares;
+        			isLong = true;
+        		}
+        		if (isShort == true) { 
+        			result = sell - (priceTomorrow * numShares);
+        			System.out.printf("%.2f", result);
+        			System.out.print(" | ");
+        			isShort = false;
+        			buy = priceTomorrow * numShares;
+        			isLong = true;
+        			profitLoss += result;
+        		}
+        	}
+        	// Short
+        	if (OBV >= 0) {
+        		
+        		if (isShort == false && isLong == false) {
+        			sell = priceTomorrow * numShares;
+        			isShort = true;
+        		}
+        		if (isLong == true) {
+        			result = (priceTomorrow * numShares) - buy;
+        			System.out.printf("%.2f", result);
+        			System.out.print(" | ");
+        			isLong = false;
+        			sell = priceTomorrow * numShares;
+        			isShort = true;
+        			profitLoss += result;
+        		}
+        	}
+        }
+        System.out.println("\n");
+        System.out.println("Total Profit/Loss: ");
+        System.out.printf("%.2f", profitLoss);
+	}
+}
+
+
