@@ -1,0 +1,26 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This class reads a stock's closing price history from a text file.
+ * It then adds this data to a linked list.
+ */
+
+public class ClosePriceHistory {
+	
+	static LinkedList<Double> closePriceHistory = new LinkedList<Double> ();
+	
+	public static void readFile(String file) throws FileNotFoundException {
+		
+		Scanner scanner = new Scanner(new File(file));
+        
+        while (scanner.hasNext()) {
+        	
+        	closePriceHistory.add(Double.parseDouble(scanner.next()));
+        }
+         
+        scanner.close();
+	}
+}
