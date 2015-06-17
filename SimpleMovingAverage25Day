@@ -1,0 +1,48 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This class reads a stock's price from a text file. It
+ * then calculates the 25-day simple moving average (SMA)
+ * and adds the results to a linked list.
+ */
+
+public class SimpleMovingAverage25Day {
+	
+	static LinkedList<Double> stockPrice25Day = new LinkedList<Double> ();
+	static LinkedList<Double> sma25Day = new LinkedList<Double> ();
+
+	public static void simpleMA25Day(LinkedList<Double> stockPrice) {	
+		
+		int counter = 226;
+		
+		while (stockPrice25Day.size() >= 26) {
+			
+			double sum = 0.0;
+			double sma = 0.0;
+			for (int i = 0; i < stockPrice25Day.size() - counter; i++) {
+			
+				sum += stockPrice25Day.get(i);
+			}
+			sma = sum/25;
+			sma25Day.addLast(sma);
+			//System.out.println(sma);
+			counter = counter - 1;
+			stockPrice25Day.removeFirst();
+		}
+	}
+	
+	public static void readFile(String file) throws FileNotFoundException {
+		
+		Scanner scanner = new Scanner(new File(file));
+        
+        while (scanner.hasNext()) {
+        	
+        	stockPrice25Day.add(Double.parseDouble(scanner.next()));
+        }
+         
+        scanner.close();
+	}
+}
