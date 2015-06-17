@@ -1,0 +1,98 @@
+import java.io.FileNotFoundException;
+import java.util.ListIterator;
+import java.util.Scanner;
+/**
+ * @author Joseph Nowicki
+ * This algorithm implements a basic momentum trading strategy. 
+ * When the price of a stock is higher than the previous day
+ * the stock is bought and held until the trend is broken. 
+ * When the price of a stock is lower than the previous day
+ * the stock is sold short and held until the trend is broken. 
+ * The results of each individual trade and the total
+ * profit/loss is returned.
+ */
+
+public class MomentumStrategy {
+
+	public static void main(String[] args) throws FileNotFoundException {
+		
+		@SuppressWarnings("resource")
+		Scanner console = new Scanner(System.in);
+		System.out.println("Enter Stock Symbol and Year (Ex. DIA2006): " );
+		String stock = console.next();
+		
+		OpenPriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "OpenPriceHistory.txt");
+		ClosePriceHistory.readFile("C:/Users/Owner/Desktop/CSC431FinalProjectData/" + stock + "ClosePriceHistory.txt");
+		
+		ListIterator<Double> iterOpenPrice = OpenPriceHistory.openPriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice = ClosePriceHistory.closePriceHistory.listIterator();
+		ListIterator<Double> iterClosePrice2 = ClosePriceHistory.closePriceHistory.listIterator();
+		
+		// Align List
+    iterOpenPrice.next();
+        
+    System.out.println("Individual Trade Results:");
+        
+    double priceToday = iterClosePrice.next();
+    double priceYesterday = iterClosePrice2.next();
+    double priceTomorrow = iterOpenPrice.next();
+        
+    double buy = 0.0;
+    double sell = 0.0;
+    int numShares = 100;
+    double result = 0.0;
+    double profitLoss = 0.0;
+    boolean isLong = false;
+    boolean isShort = false;
+        
+    while (iterClosePrice.hasNext() != false && iterOpenPrice.hasNext() != false) {
+        
+        	priceToday = iterClosePrice.next();
+        	priceYesterday = iterClosePrice2.previous();
+        	priceTomorrow = iterOpenPrice.next();
+        	
+        	// Long
+        	if (priceToday >= priceYesterday) {
+        		
+        		if (isShort == false && isLong == false) {
+        			buy = priceTomorrow * numShares;
+        			isLong = true;
+        		}
+        		if (isShort == true) { 
+        			result = sell - (priceTomorrow * numShares);
+        			System.out.printf("%.2f", result);
+        			System.out.print(" | ");
+        			isShort = false;
+        			buy = priceTomorrow * numShares;
+        			isLong = true;
+        			profitLoss += result;
+        		}
+        		priceYesterday = iterClosePrice2.next();
+        		priceYesterday = iterClosePrice2.next();
+        	}
+        	
+        	// Short
+        	if (priceToday < priceYesterday) {
+        		
+        		if (isShort == false && isLong == false) {
+        			sell = priceTomorrow * numShares;
+        			isShort = true;
+        		}
+        		if (isLong == true) {
+        			result = (priceTomorrow * numShares) - buy;
+        			System.out.printf("%.2f", result);
+        			System.out.print(" | ");
+        			isLong = false;
+        			sell = priceTomorrow * numShares;
+        			isShort = true;
+        			profitLoss += result;
+        		}
+        		priceYesterday = iterClosePrice2.next();
+        		priceYesterday = iterClosePrice2.next();
+        	}
+        }
+        System.out.println("\n");
+        System.out.println("Total Profit/Loss: ");
+        System.out.printf("%.2f", profitLoss);
+	}
+}
